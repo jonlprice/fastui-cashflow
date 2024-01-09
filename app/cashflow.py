@@ -70,8 +70,8 @@ class Stock:
             return
         # tickers = ["^GSPC", "^FTSE", "^RUT", "^FCHI", "^GDAXI"]
         #tickers = ["^GSPC"]
-        tickers = ["^GSPC"]
-        logger.info("Looking up returns data for",tickers)
+        tickers = ["^GSPC","^FTSE"]
+        logger.info(f"Looking up returns data for {tickers}")
 
         startyear = str(self.start)
         endyear = str(self.end)
@@ -82,11 +82,13 @@ class Stock:
         self.data = yf.download(tickers, start=start, end=end,
                    group_by="ticker")
 
+        print(self.data)
+
         self.data_populated = True
 
     def get_yearly_returns(self,start,years,ticker):
 
-        logger.info("Returning data for",ticker,start,years)
+        logger.info(f"Returning data for {ticker},{start},{years}")
         self.ticker = ticker
 
         df = pd.DataFrame(self.data[ticker]['Close'])
@@ -119,12 +121,13 @@ class Stock:
 ###########################################################################
 
 logger = logging.getLogger('cashflow')
-stock_returns = Stock()
-stock_returns.get_data()
 
 router = APIRouter()
 
 templates = Jinja2Templates(directory="templates")
+
+stock_returns = Stock()
+logger.info(stock_returns)
 
 def get_css():
     css = """
@@ -250,7 +253,7 @@ def cashflow_plot(pensionparams, incomeparams, params):
     charges = params.charges
     age_now = params.age
     retire = params.retirement_age
-    historic_start_year = 1990
+    historic_start_year = 1993
 
     house_price = 500000
     h = [house_price := house_price * (1.03) for year in range(years)]
@@ -260,6 +263,7 @@ def cashflow_plot(pensionparams, incomeparams, params):
     if growth > 0:
         growth_profile = [((100 + growth) / 100) for year in range(years)]
     else:
+        stock_returns.get_data()
         growth_profile = stock_returns.get_yearly_returns(start=historic_start_year,
                                                           ticker=ticker, years=years)
 

@@ -17,7 +17,7 @@ from pydantic import BaseModel, EmailStr, Field, SecretStr, field_validator
 from pydantic_core import PydanticCustomError
 
 from .shared import demo_page
-from .dao import read_pot, update_pot, read_income, update_income, update_parameters
+from .dao import read_pot, update_pot, read_income, update_income, read_parameters, update_parameters
 from .env import ENV
 import logging
 
@@ -202,19 +202,21 @@ def form_content(kind: FormKind):
                            })
             ]
         case "parameters":
+            id = 1
+            dbp = read_parameters(int(id))
             return [
                 c.ModelForm(model=ParametersModel, submit_url='/api/forms/parameters',
                             initial={
-                           'cashflow_id':cashflow_form.parameters.cashflow_id,
-                           'target_income':cashflow_form.parameters.target_income,
-                           'inflation':cashflow_form.parameters.inflation,
-                           'growth':cashflow_form.parameters.growth,
-                           'age':cashflow_form.parameters.age,
-                           'retirement_age':cashflow_form.parameters.retirement_age,
-                           'historical_start_year':cashflow_form.parameters.historical_start_year,
-                           'years':cashflow_form.parameters.years,
-                           'ticker':cashflow_form.parameters.ticker,
-                           'charges':cashflow_form.parameters.charges
+                           'cashflow_id':dbp.cashflow_id,
+                           'target_income':dbp.target_income,
+                           'inflation':dbp.inflation,
+                           'growth':dbp.growth,
+                           'age':dbp.age,
+                           'retirement_age':dbp.retirement_age,
+                           'historical_start_year':dbp.historical_start_year,
+                           'years':dbp.years,
+                           'ticker':dbp.ticker,
+                           'charges':dbp.charges
                            })
             ]
         case _:
