@@ -1,0 +1,29 @@
+h1 {
+    color: green;
+}
+
+#userdata {
+    float: left;
+    width:15%
+    padding: 1em
+    font-size: small;
+}
+#userdata form {
+    text-align: right;
+    padding: 20px;
+}
+#userdata input {
+    width: 100px;
+}
+#chart { float: left; width:85% }
+
+
+/*
+tr td {
+    font-size: xx-small;
+}
+table.ui.celled.table tr td {
+    font-size: small;
+    color: red;
+}
+*/

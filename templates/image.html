@@ -1,0 +1,27 @@
+<html>
+<head>
+    <title>Yield Curve</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.5.0/dist/semantic.min.css">
+    <link href="{{ url_for('static', path='/styles.css') }}" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.5.0/dist/semantic.min.js"></script>
+</head>
+<body>
+    <h1><a href="/">Yield Curve </a>
+        <i class="angle double right icon"></i><a href="/gilts">Gilts</a></h1>
+    <h1><a href="/cashflow">Cashflow</a>
+        <i class="angle double right icon"></i><a href="/">Yield Curve</a></h1>
+    <div id="prices">
+      <form action="/update" method="GET">
+          <p><input type='submit' value='Refresh Prices'/> Last updated: {{last_refresh}}</p>
+    </div>
+
+    {% if img %}
+    <div>
+        <iframe height=600% width=800% src="data:text/html;base64,{{img}}"></iframe>
+    </div>
+    {% else %}
+    <h1>Image will be render here...</h1>
+    {% endif %}
+
+  </body>
+</html>

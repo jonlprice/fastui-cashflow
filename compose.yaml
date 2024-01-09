@@ -1,0 +1,20 @@
+services:
+  postgres:
+      image: postgres
+      ports:
+        - 5432:5432
+      environment:
+          POSTGRES_PASSWORD: password
+
+  fastapi:
+      image: fastapi
+      ports:
+        - 80:80
+      environment:
+          DB_HOST: postgres
+          DB_PORT: 5432
+          DB_USER: postgres
+          DB_PASSWORD: password
+          DB_NAME: postgres
+          CASHFLOW_TABS: "Jon,Tracey,ISA,Savings"
+          CASHFLOW_INCOMES: "Income1,Income2,Income3,Income4,"

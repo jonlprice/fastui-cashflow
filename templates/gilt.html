@@ -1,0 +1,65 @@
+<html>
+<head>
+    <title>Gilt Details</title>
+    <link href="{{ url_for('static', path='/styles.css') }}" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.5.0/dist/semantic.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.5.0/dist/semantic.min.js"></script>
+</head>
+<body>
+    <h1>
+        <a href="/">Yield Curve </a>
+        <i class="angle double right icon"></i>
+        <a href="/gilts">Gilts </a>
+        <i class="angle double right icon"></i>{{gilt.instrument_name}}
+    </h1>
+    <table class="ui celled table">
+        <thead>
+        <tr>
+        <th>id</th>
+        <th>date</th>
+        <th>type</th>
+        <th>bracket</th>
+        <th>name</th>
+        <th>isin</th>
+        <th>redemptiondate</th>
+        <th>first issue date</th>
+        <th>dividend dates</th>
+        <th>current ex div date</th>
+        <th>in issue</th>
+        <th>inc il uplift</th>
+        <th>coupon</th>
+        <th>days left</th>
+        <th>years left</th>
+        <th>clean price</th>
+        <th>dirty price</th>
+        <th>tradeweb yield</th>
+        <th>yield</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr>
+        <td>{{gilt.gilt_id}}</td>
+        <td>{{gilt.close_of_business_date}}</td>
+        <td>{{gilt.instrument_type}}</td>
+        <td>{{gilt.maturity_bracket}}</td>
+        <td><a href="https://www.londonstockexchange.com/stock/{{gilt.ticker}}/united-kingdom" target="_blank" rel="noopener noreferrer">{{gilt.instrument_name}}</a></td>
+        <td>{{gilt.isin_code}}</td>
+        <td>{{gilt.redemption_date}}</td>
+        <td>{{gilt.first_issue_date}}</td>
+        <td>{{gilt.dividend_dates}}</td>
+        <td>{{gilt.current_ex_div_date}}</td>
+        <td>{{gilt.total_amount_in_issue}}</td>
+        <td>{{gilt.total_amount_including_il_uplift}}</td>
+        <td>{{gilt.coupon}}</td>
+        <td>{{gilt.days_to_redemption}}</td>
+        <td>{{gilt.years_to_redemption}}</td>
+        <td>{{gilt.clean_price}}</td>
+        <td>{{gilt.dirty_price}}</td>
+        <td>{{gilt.tradeweb_yield}}</td>
+        <td>{{gilt.calculated_yield}}</td>
+        </tr>
+        </tbody>
+    </table>
+</body>
+</html>

@@ -1,0 +1,56 @@
+
+<html>
+<head>
+    <title>Yield Curve</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.5.0/dist/semantic.min.css">
+    <link href="{{ url_for('static', path='/styles.css') }}" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.5.0/dist/semantic.min.js"></script>
+
+</head>
+   <body>
+
+    <h1><a href="/">Yield Curve </a>
+        <i class="angle double right icon"></i><a href="/gilts">Gilts</a></h1>
+    <div>
+
+
+    <div id="userdata">
+      <form action="/cashflow" method="POST">
+          <p>Pot 0<input type='number' name='pot0' value={{default_cashflow.pot0}} step=1000 /></p>
+          <p>Pot 1<input type='number' name='pot1' value={{default_cashflow.pot1}} step=1000 /></p>
+          <p>ISA <input type='number' name='isa' value={{default_cashflow.isa}} step=500 /></p>
+          <p>Savings <input type='number' name='savings' value={{default_cashflow.savings}} step=500 /></p>
+          <p>Income <input type='number' name='income' value={{default_cashflow.income}} step=5000 /></p>
+          <p>Retire Age<input type='number' name='retire' value={{default_cashflow.retire}} /></p>
+         <p>Growth <input type='number' name='growth' value={{default_cashflow.growth}} /></p>
+         <p>Year <input type='number' name='historic_start_year' value={{default_cashflow.historic_start_year}} min="1927" max="2000"/></p>
+         <p>Inflation <input type='number' name='inflation' value={{default_cashflow.inflation}} /></p>
+         <p>Years <input type='number' name='years' value={{default_cashflow.years}} min="10" max="40"/></p>
+         <p><label for="ticker">Ticker</label>
+            <select id="ticker" name="ticker">
+                <option value="^GSPC">S&P500</option>
+                <option value="^FTSE">FTSE100</option>
+                <option value="^RUT">Russell 2000</option>
+                <option value="^FCHI">CAC 40</option>
+                <option value="^GDAXI">DAX</option>
+            </select></p>
+         <p><input type='submit' value='Plot'/></p>
+
+         <p>{{checkbox}}</p>
+
+        {% for c in checkbox %}
+        <input type="checkbox" id="{{c}}" name="{{c}}" value="{{c}}">
+        <label for="{{c}}"> {{c}}</label><br>
+        {% endfor %}
+      </form>
+
+    </div>
+    <div id="chart">
+    {{ html|safe }}
+    </div>
+
+
+    </div>
+
+   </body>
+</html>

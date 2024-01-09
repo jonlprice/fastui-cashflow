@@ -1,0 +1,71 @@
+<html>
+<head>
+    <title>Gilt Details</title>
+    <!--
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.5.0/dist/semantic.min.css">
+    -->
+
+      <link href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.css"
+          rel="stylesheet" />
+    <link href="{{ url_for('static', path='/styles.css') }}" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"
+            crossorigin="anonymous">
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.js">
+    </script>
+    <script src="https://semantic-ui.com/javascript/library/tablesort.js">
+     </script>
+</head>
+<body>
+    <h1><a href="/">Home </a>
+        <i class="angle double right icon"></i>Gilts</h1>
+    <table class="ui sortable small table">
+        <thead>
+        <tr>
+        <th>Id</th>
+        <th>Type</th>
+        <th>Bracket</th>
+        <th>Code</th>
+        <th>Name</th>
+        <th>Isin</th>
+        <th>Redemption date</th>
+        <th>Dividend dates</th>
+        <th>Current ex div date</th>
+        <th>Coupon</th>
+        <th>Days left</th>
+        <th>Years left</th>
+        <th>Clean price</th>
+        <th>Dirty price</th>
+        <th>Tradeweb</th>
+        <th>Yield</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        {% for g in gilts %}
+        <tr>
+        <td>{{g.gilt_id}}</td>
+        <td>{{g.instrument_type}}</td>
+        <td>{{g.maturity_bracket}}</td>
+        <td><a href="https://www.londonstockexchange.com/stock/{{g.ticker}}/united-kingdom" target="_blank" rel="noopener noreferrer">{{g.ticker}}</a></td>
+        <td><a href="/gilts/{{g.gilt_id}}">{{g.instrument_name}}</a></td>
+        <td>{{g.isin_code}}</td>
+        <td>{{g.redemption_date}}</td>
+        <td>{{g.dividend_dates}}</td>
+        <td>{{g.current_ex_div_date}}</td>
+        <td>{{g.coupon}}%</td>
+        <td>{{g.days_to_redemption}}</td>
+        <td>{{ "%.2f"|format(g.years_to_redemption|float)}}</td>
+        <td>{{ "%.2f"|format(g.clean_price|float)}}</td>
+        <td>{{g.dirty_price}}</td>
+        <td>{{g.tradeweb_yield}}%</td>
+        <td>{{g.calculated_yield}}%</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <script>
+        $('.sortable.table').tablesort();
+    </script>
+</body>
+</html>
