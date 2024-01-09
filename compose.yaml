@@ -16,5 +16,5 @@ services:
           DB_USER: postgres
           DB_PASSWORD: password
           DB_NAME: postgres
-          CASHFLOW_TABS: "Jon,Tracey,ISA,Savings"
+          CASHFLOW_TABS: "Pot1,Pot2,ISA,Savings"
           CASHFLOW_INCOMES: "Income1,Income2,Income3,Income4,"
