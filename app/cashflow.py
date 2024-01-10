@@ -36,6 +36,7 @@ class Pot(BaseModel):
     start: int
     yearly_limit: int
     amount: list[float]
+    spent: list[float]
 
     def __str__(self) -> str:
         return f"{self.label} {self.start} {self.yearly_limit} {self.amount}"
@@ -132,7 +133,7 @@ logger.info(stock_returns)
 def get_css():
     css = """
         table {
-          width: 250px;
+          width: 300px;
           color: blue;
           font-family:Arial, Helvetica, sans-serif;
           border: 1px solid black;
@@ -170,6 +171,16 @@ def get_css():
         td.spenddata {
           border-top: 1px solid black;
         }
+        td.labeltotal {
+          border-top: 1px solid black;
+          color: black;
+          font-weight: bold;
+          text-align: left;
+        }
+        td.total {
+          border-top: 1px solid black;
+          font-weight: bold;
+        }
     """
     return css
 
@@ -183,6 +194,13 @@ def bar_hover_table(year,age,pensions,growth,inflation,incomes,drawdown):
             + f"{p.amount[year]:,.0f}" \
             + "<td/></tr>"
         total = total + p.amount[year]
+
+    spent_html = ""
+    for p in pensions:
+        spent_html = spent_html + f"<tr><td class=label>{p.label}:</td><td>£" \
+            + f"{p.spent[year]:,.0f}" \
+            + "<td/></tr>"
+
     income_html = ""
 
     income_total = 0
@@ -199,14 +217,11 @@ def bar_hover_table(year,age,pensions,growth,inflation,incomes,drawdown):
         growthclass="negative"
 
     table_html = "<table><caption>" \
-            + "<span class = label>Age:</span> " \
-            + f"{age}" \
-            + " <span class = label>Total:</span> £" \
-            + f"{total:,.0f}" \
+            + "<span class = label>Savings, Age:</span> " \
+            + f"{age}, " \
+            + "<span class = label>Year:</span> " \
+            + f"{year+1}" \
             + "</caption>" \
-            + "<tr><td class=label>Year:</td><td>" \
-            + f"{year + 1:,.0f}" \
-            + "<td/></tr>" \
             + f"<tr><td class=label>Growth:</td><td class={growthclass}>" \
             + f"{stock_returns.ticker.replace('^','')} {((growth - 1)*100):,.2f}%" \
             + "<td/></tr>" \
@@ -214,17 +229,21 @@ def bar_hover_table(year,age,pensions,growth,inflation,incomes,drawdown):
             + f"{inflation:,.2f}%" \
             + "<td/></tr>" \
             + pension_html \
+            + "<tr><td class=labeltotal>Total:</td><td class=total>" \
+            + f"£{total:,.2f}" \
+            + "<td/></tr>" \
             + "</table>" \
             + "<table><caption>" \
-            + "<span class = label>Age:</span> " \
-            + f"{age}" \
-            + " <span class = label>Spend:</span> £" \
-            + f"{income_total:,.0f}" \
+            + "<span class = label>Income, Age:</span> " \
+            + f"{age}, " \
+            + "<span class = label>Year:</span> " \
+            + f"{year+1}" \
             + "</caption>" \
             + income_html \
-            + "<tr><td class=label>Drawdown:</td><td>£" \
-            + f"{drawdown:,.0f}" \
-            + "</td></tr>" \
+            + spent_html \
+            + "<tr><td class=labeltotal>Total:</td><td class=total>" \
+            + f"£{income_total:,.2f}" \
+            + "<td/></tr>" \
             + "</table>"
 
     return table_html
@@ -295,7 +314,8 @@ def cashflow_plot(pensionparams, incomeparams, params):
 
         pen = Pot(label = pensionparams[y].name, start=pensionparams[y].amount,
                   yearly_limit = 0,
-                  amount=[pensionparams[y].amount for year in range(years)])
+                  amount=[pensionparams[y].amount for year in range(years)],
+                  spent=[0 for year in range(years)])
 
         if pen.start > 100000:
             pen.yearly_limit = 1000000
@@ -354,6 +374,7 @@ def cashflow_plot(pensionparams, incomeparams, params):
             p.amount[y+1] = p.amount[y+1] * growth_profile[y]
             p.amount[y+1] = p.amount[y+1] - ((charges/100)*p.amount[y+1])
             drawdown_pot[y] = drawdown_pot[y] - spent
+            p.spent[y] = spent
 
     np_pensions = []
     for p in pensions:
@@ -379,8 +400,7 @@ def cashflow_plot(pensionparams, incomeparams, params):
     bars = []
 
     # See https://colorbrewer2.org/#type=qualitative&scheme=Accent&n=7
-    bar_colours = ['#a6cee3','#1f78b4','#b2df8a','#33a02c',
-                   '#fb9a99','#e31a1c','#fdbf6f']
+    bar_colours = ['#a6cee3','#1f78b4','#b2df8a','#33a02c','#fb9a99','#e31a1c','#fdbf6f','#ff7f00','#cab2d6','#6a3d9a']
 
     for c, p in enumerate(np_pensions):
         box = ax1.bar(age,p, bottom=sum(bars),color=bar_colours[c])
@@ -426,16 +446,27 @@ def cashflow_plot(pensionparams, incomeparams, params):
     boxes = []
     legend_labels = []
 
+    bar_count=0
     for i, income in enumerate(incomes):
         np_income = np.array(income.amount)
         box = ax3.bar(age,np_income, bottom=sum(bars),color=bar_colours[i])
         boxes.append(box)
         bars.append(np_income)
         legend_labels.append(income.label)
+        bar_count=i
 
+    for i, pension in enumerate(pensions):
+        np_pension = np.array(pension.spent)
+        box = ax3.bar(age,np_pension, bottom=sum(bars),color=bar_colours[i+bar_count])
+        boxes.append(box)
+        bars.append(np_pension)
+        legend_labels.append(pension.label)
+
+    """
     box = ax3.bar(age,np_drawn_down, bottom=sum(bars),color=bar_colours[5])
     boxes.append(box)
     legend_labels.append('Drawdown')
+    """
 
     ax3.set_title('Spend', fontdict=font)
     ax3.set_xlabel('Age', fontdict=font)

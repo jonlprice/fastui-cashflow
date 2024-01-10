@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pydantic
 from fastapi import APIRouter
-from fastui import AnyComponent, FastUI, components
+from fastui import AnyComponent, FastUI
 from fastui import components as c
 from fastui.components.display import DisplayLookup, DisplayMode
 from fastui.events import BackEvent, GoToEvent, PageEvent
@@ -221,41 +221,6 @@ async def hello():
 '''
    return HTMLResponse(content=ret)
 
-@router.get('/new', response_model=FastUI, response_model_exclude_none=True)
-def new_view():
-    city_id=1392685764
-    city = cities_lookup()[city_id]
-    markdown = """\
-This site provides a demo of [FastUI](https://github.com/pydantic/FastUI), the code for the demo
-is [here](https://github.com/pydantic/FastUI/tree/main/demo).
-
-<table>
-    <tr>
-        <td>Foo</td>
-    </tr>
-</table>
-
-The following components are demonstrated:
-
-* `Markdown` — that's me :-)
-* `Text`— example [here](/components#text)
-* `Paragraph` — example [here](/components#paragraph)
-    """
-    return demo_page(
-        *tabs(),
-        c.Div(
-            components=[
-                c.Heading(text='Iframe', level=2),
-                c.Markdown(text='`Iframe` can be used to embed external content.'),
-                c.Iframe(src='https://pydantic.dev', width='100%', height=400),
-            ],
-            class_name='border-top mt-3 pt-1',
-        ),
-        c.Markdown(text=markdown),
-        c.Link(components=[c.Text(text='Back')], on_click=BackEvent()),
-        c.Details(data=city),
-        title=city.city,
-    )
 
 @router.get('/cities/{city_id}', response_model=FastUI, response_model_exclude_none=True)
 def city_view(city_id: int) -> list[AnyComponent]:

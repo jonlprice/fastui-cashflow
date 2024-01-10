@@ -16,15 +16,13 @@ from sqlalchemy import text
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 from sqlalchemy.orm import Session
 from fastapi import BackgroundTasks
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 import matplotlib
-import numpy as np
 import locale
 import pandas as pd
 import requests
 from io import StringIO
-import yfinance as yf
 import logging
 
 locale.setlocale(locale.LC_ALL, '')

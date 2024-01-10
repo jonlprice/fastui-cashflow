@@ -5,7 +5,7 @@ from fastui import AnyComponent, FastUI
 from fastui import components as c
 from fastui.events import PageEvent
 from fastapi.staticfiles import StaticFiles
-from fastui.events import BackEvent, GoToEvent
+from fastui.events import GoToEvent
 
 from .shared import demo_page
 from .gilts import create_image
