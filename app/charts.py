@@ -16,11 +16,11 @@ router = APIRouter()
 @router.get('/cashflow')
 async def charts_cashflow_landing() -> HTMLResponse:
 
-    pensions = []
+    pots = []
     for i in range(1,5):
         db = read_pot(i)
         p = PotModel(pot_id=db.pot_id,name=db.name, type=db.type, amount=db.amount, select_single = PotEnum('isa'))
-        pensions.append(p)
+        pots.append(p)
 
     incomes = []
     for i in range(1,5):
@@ -38,7 +38,7 @@ async def charts_cashflow_landing() -> HTMLResponse:
                              charges=pm.charges,historical_start_year=pm.historical_start_year,years=pm.years,ticker=pm.ticker)
 
 
-    html = cashflow_plot(pensions, incomes,params)
+    html = cashflow_plot(pots, incomes,params)
 
     return HTMLResponse(html)
 

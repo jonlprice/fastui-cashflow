@@ -133,13 +133,14 @@ logger.info(stock_returns)
 def get_css():
     css = """
         table {
-          width: 300px;
+          width: 250px;
           color: blue;
           font-family:Arial, Helvetica, sans-serif;
           border: 1px solid black;
           text-align: right;
           padding: 0.5em;
           background: white;
+          border-collapse: collapse;
         }
         caption {
           color: blue;
@@ -149,8 +150,14 @@ def get_css():
           border-right: 1px solid black;
           padding: 0.5em;
           background: white;
-          text-align: center;
+          text-align: left;
           white-space: nowrap;
+        }
+        td {
+          padding-top: 0.1em;
+          padding-bottom: 0.1em;
+          padding-left: 0.5em;
+          padding-right: 0.5em;
         }
         td.label {
           color: black;
@@ -181,22 +188,53 @@ def get_css():
           border-top: 1px solid black;
           font-weight: bold;
         }
+        tr.parameters td {
+          border-bottom: 1px solid black;
+        }
     """
     return css
 
-def bar_hover_table(year,age,pensions,growth,inflation,incomes,drawdown):
+def pot_bar_hover_table(year,pot_start_date,age,pots,growth,inflation):
 
     total = 0
 
-    pension_html = ""
-    for p in pensions:
-        pension_html = pension_html + f"<tr><td class=label>{p.label}:</td><td>£" \
+    pot_html = ""
+    for p in pots:
+        pot_html = pot_html + f"<tr><td class=label>{p.label}:</td><td>£" \
             + f"{p.amount[year]:,.0f}" \
             + "<td/></tr>"
         total = total + p.amount[year]
 
+    growthclass="positive"
+    if growth < 1:
+        growthclass="negative"
+
+    table_html = "<table><caption>" \
+            + "<span class = label>Savings, Age:</span> " \
+            + f"{age}, " \
+            + "<span class = label>Year:</span> " \
+            + f"{year+1}, {pot_start_date.year+year}" \
+            + "</caption>" \
+            + f"<tr><td class=label>Growth:</td><td class={growthclass}>" \
+            + f"{stock_returns.ticker.replace('^','')} {((growth - 1)*100):,.2f}%" \
+            + "<td/></tr>" \
+            + "<tr class=parameters><td class=label>Inflation:</td><td>" \
+            + f"{inflation:,.2f}%" \
+            + "<td/></tr>" \
+            + pot_html \
+            + "<tr><td class=labeltotal>Total:</td><td class=total>" \
+            + f"£{total:,.0f}" \
+            + "<td/></tr>" \
+            + "</table>"
+
+    return table_html
+
+def spend_bar_hover_table(year,pot_start_date,age,pots,incomes,drawdown):
+
+    total = 0
+
     spent_html = ""
-    for p in pensions:
+    for p in pots:
         spent_html = spent_html + f"<tr><td class=label>{p.label}:</td><td>£" \
             + f"{p.spent[year]:,.0f}" \
             + "<td/></tr>"
@@ -212,42 +250,18 @@ def bar_hover_table(year,age,pensions,growth,inflation,incomes,drawdown):
         income_total = income_total + i.amount[year]
     income_total = income_total + drawdown
 
-    growthclass="positive"
-    if growth < 1:
-        growthclass="negative"
-
     table_html = "<table><caption>" \
-            + "<span class = label>Savings, Age:</span> " \
-            + f"{age}, " \
-            + "<span class = label>Year:</span> " \
-            + f"{year+1}" \
-            + "</caption>" \
-            + f"<tr><td class=label>Growth:</td><td class={growthclass}>" \
-            + f"{stock_returns.ticker.replace('^','')} {((growth - 1)*100):,.2f}%" \
-            + "<td/></tr>" \
-            + "<tr><td class=label>Inflation:</td><td>" \
-            + f"{inflation:,.2f}%" \
-            + "<td/></tr>" \
-            + pension_html \
-            + "<tr><td class=labeltotal>Total:</td><td class=total>" \
-            + f"£{total:,.2f}" \
-            + "<td/></tr>" \
-            + "</table>" \
-            + "<table><caption>" \
             + "<span class = label>Income, Age:</span> " \
             + f"{age}, " \
             + "<span class = label>Year:</span> " \
-            + f"{year+1}" \
+            + f"{year+1}, {pot_start_date.year+year}" \
             + "</caption>" \
             + income_html \
             + spent_html \
             + "<tr><td class=labeltotal>Total:</td><td class=total>" \
-            + f"£{income_total:,.2f}" \
+            + f"£{income_total:,.0f}" \
             + "<td/></tr>" \
             + "</table>"
-
-    return table_html
-
 
     return table_html
 
@@ -262,7 +276,7 @@ def withdraw(available, request):
         w = 0
     return w
 
-def cashflow_plot(pensionparams, incomeparams, params):
+def cashflow_plot(potparams, incomeparams, params):
     # create data
 
     years = params.years
@@ -272,7 +286,7 @@ def cashflow_plot(pensionparams, incomeparams, params):
     charges = params.charges
     age_now = params.age
     retire = params.retirement_age
-    historic_start_year = 1993
+    historical_start_year = params.historical_start_year
 
     house_price = 500000
     h = [house_price := house_price * (1.03) for year in range(years)]
@@ -283,7 +297,7 @@ def cashflow_plot(pensionparams, incomeparams, params):
         growth_profile = [((100 + growth) / 100) for year in range(years)]
     else:
         stock_returns.get_data()
-        growth_profile = stock_returns.get_yearly_returns(start=historic_start_year,
+        growth_profile = stock_returns.get_yearly_returns(start=historical_start_year,
                                                           ticker=ticker, years=years)
 
     age = [retire + year for year in range(years)]
@@ -291,13 +305,13 @@ def cashflow_plot(pensionparams, incomeparams, params):
     cpi = inflation / 100
     incomes = []
 
-    pension_start_date = dt.datetime.now().date() + relativedelta(years=(retire-age_now))
-    logger.info(f"age now {age_now}, pension start {retire}, pension_start_date {pension_start_date}")
+    pot_start_date = dt.datetime.now().date() + relativedelta(years=(retire-age_now))
+    logger.info(f"age now {age_now}, retirement start {retire}, pot_start_date {pot_start_date}")
 
     for y in range(4):
         yearly = incomeparams[y].amount
         # delta_date = incomeparams[y].start_date - dt.datetime.now().date()
-        delta_date = incomeparams[y].start_date - pension_start_date
+        delta_date = incomeparams[y].start_date - pot_start_date
         years_in = round(delta_date.days/365)
 
         incomes.append(Income( yearly=yearly,cpi = inflation, years_in = years_in,
@@ -308,13 +322,13 @@ def cashflow_plot(pensionparams, incomeparams, params):
 
         logger.info(str(years_in) + ' ' + incomeparams[y].name + ' ' + incomeparams[y].type)
 
-    pensions = []
+    pots = []
 
     for y in range(4):
 
-        pen = Pot(label = pensionparams[y].name, start=pensionparams[y].amount,
+        pen = Pot(label = potparams[y].name, start=potparams[y].amount,
                   yearly_limit = 0,
-                  amount=[pensionparams[y].amount for year in range(years)],
+                  amount=[potparams[y].amount for year in range(years)],
                   spent=[0 for year in range(years)])
 
         if pen.start > 100000:
@@ -322,17 +336,19 @@ def cashflow_plot(pensionparams, incomeparams, params):
         else:
             pen.yearly_limit = 12750
 
-        pensions.append(pen)
+        pots.append(pen)
 
-    # Sort pensions to take from the smallest one first
-    pensions.sort()
+    # Sort pots to take from the smallest one first
+    pots.sort()
 
     plt.close()
-    fig = plt.figure(figsize=(12, 6))
-    ax1 = fig.add_subplot(211)
-    ax3 = fig.add_subplot(212)
-    plt.subplots_adjust(left=0.1, right=0.9, bottom=0.1, top=0.9,
-                        wspace=0.2, hspace=0.4)
+    fig1 = plt.figure(figsize=(12, 4))
+    ax1 = fig1.add_subplot()
+
+    fig2 = plt.figure(figsize=(12, 4))
+    ax3 = fig2.add_subplot()
+
+    plt.subplots(layout='compressed')
 
     '''
     # Calculate yearly income with inflation
@@ -363,7 +379,7 @@ def cashflow_plot(pensionparams, incomeparams, params):
     for y in range(years-1):
         spent = 0
 
-        for p in pensions:
+        for p in pots:
             if p.amount[y] > 0:
                 if drawdown_pot[y] > p.yearly_limit:
                     spent = withdraw(p.amount[y], p.yearly_limit)
@@ -376,9 +392,9 @@ def cashflow_plot(pensionparams, incomeparams, params):
             drawdown_pot[y] = drawdown_pot[y] - spent
             p.spent[y] = spent
 
-    np_pensions = []
-    for p in pensions:
-        np_pensions.append(np.array(p.amount))
+    np_pots = []
+    for p in pots:
+        np_pots.append(np.array(p.amount))
 
     np.array(age)
     np.array(h)
@@ -402,13 +418,13 @@ def cashflow_plot(pensionparams, incomeparams, params):
     # See https://colorbrewer2.org/#type=qualitative&scheme=Accent&n=7
     bar_colours = ['#a6cee3','#1f78b4','#b2df8a','#33a02c','#fb9a99','#e31a1c','#fdbf6f','#ff7f00','#cab2d6','#6a3d9a']
 
-    for c, p in enumerate(np_pensions):
+    for c, p in enumerate(np_pots):
         box = ax1.bar(age,p, bottom=sum(bars),color=bar_colours[c])
         boxes.append(box)
         bars.append(p)
 
     legend_labels = []
-    for p in pensions:
+    for p in pots:
         legend_labels.append(p.label)
 
     font = {'family': 'serif',
@@ -430,13 +446,13 @@ def cashflow_plot(pensionparams, incomeparams, params):
 
     labels = []
     for i, box in enumerate(boxes[0].get_children()):
-        labels.append(bar_hover_table(i,age[i],pensions,
-                                      growth_profile[i],inflation,incomes,np_drawn_down[i]))
+        labels.append(pot_bar_hover_table(i,pot_start_date,age[i],pots,
+                                      growth_profile[i],inflation))
 
     for b in boxes:
         for i, box in enumerate(b.get_children()):
             tooltip = mpld3.plugins.LineHTMLTooltip(box,label=labels[i],css=css)
-            mpld3.plugins.connect(fig, tooltip)
+            mpld3.plugins.connect(fig1, tooltip)
 
     '''
     # Plot Spend
@@ -455,18 +471,22 @@ def cashflow_plot(pensionparams, incomeparams, params):
         legend_labels.append(income.label)
         bar_count=i
 
-    for i, pension in enumerate(pensions):
-        np_pension = np.array(pension.spent)
-        box = ax3.bar(age,np_pension, bottom=sum(bars),color=bar_colours[i+bar_count])
+    for i, pot in enumerate(pots):
+        np_pot = np.array(pot.spent)
+        box = ax3.bar(age,np_pot, bottom=sum(bars),color=bar_colours[i+bar_count])
         boxes.append(box)
-        bars.append(np_pension)
-        legend_labels.append(pension.label)
+        bars.append(np_pot)
+        legend_labels.append(pot.label)
 
-    """
-    box = ax3.bar(age,np_drawn_down, bottom=sum(bars),color=bar_colours[5])
-    boxes.append(box)
-    legend_labels.append('Drawdown')
-    """
+    labels = []
+    for i, box in enumerate(boxes[0].get_children()):
+        labels.append(spend_bar_hover_table(i,pot_start_date,age[i],pots,
+                                      incomes,np_drawn_down[i]))
+
+    for b in boxes:
+        for i, box in enumerate(b.get_children()):
+            tooltip = mpld3.plugins.LineHTMLTooltip(box,label=labels[i],css=css)
+            mpld3.plugins.connect(fig2, tooltip)
 
     ax3.set_title('Spend', fontdict=font)
     ax3.set_xlabel('Age', fontdict=font)
@@ -475,6 +495,9 @@ def cashflow_plot(pensionparams, incomeparams, params):
     ax3.grid(False)
     ax3.legend(legend_labels)
 
-    html = mpld3.fig_to_html(fig)
+    htmlpot = mpld3.fig_to_html(fig1)
+    htmlspend = mpld3.fig_to_html(fig2)
+
+    html = htmlpot + htmlspend
 
     return html
