@@ -231,7 +231,6 @@ def pot_bar_hover_table(year,pot_start_date,age,pots,growth,inflation):
 
 def spend_bar_hover_table(year,pot_start_date,age,pots,incomes,drawdown):
 
-    total = 0
 
     spent_html = ""
     for p in pots:

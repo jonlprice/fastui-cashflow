@@ -156,7 +156,7 @@ def form_content(kind: FormKind):
             return [
                 c.Heading(text='Login Form', level=2),
                 c.Paragraph(text='Simple login form with email and password.'),
-                c.ModelForm(model=LoginForm, submit_url='/api/forms/login',initial={'email':'jlp@jlp'}),
+                c.ModelForm(model=LoginForm, submit_url='/api/forms/logi',initial={'email':'jlp@jlp'}),
             ]
         case "select":
             return [
@@ -178,13 +178,15 @@ def form_content(kind: FormKind):
         case "^pot(.*$)" as capture:
 
             id=capture[1]
+            dbpot=None
             dbpot = read_pot(int(id))
             return [
                 c.ModelForm(model=PotModel, submit_url='/api/forms/pot',
                             initial={'pot_id':dbpot.pot_id,
                                      'name':dbpot.name,
                                      'type':dbpot.type,
-                                     'amount':dbpot.amount}),
+                                     'amount':dbpot.amount,
+                                     'select_single': PotEnum('pension')})
             ]
 
         case "^income(.*$)" as capture:
