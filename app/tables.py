@@ -210,18 +210,6 @@ def cities_view(page: int = 1, country: str | None = None):
         title='Cities',
         )
 
-@router.get("/hellohtml")
-async def hello():
-   ret='''
-<html>
-<body>
-<h2>Hello World!</h2>
-</body>
-</html>
-'''
-   return HTMLResponse(content=ret)
-
-
 @router.get('/cities/{city_id}', response_model=FastUI, response_model_exclude_none=True)
 def city_view(city_id: int) -> list[AnyComponent]:
     city = cities_lookup()[city_id]

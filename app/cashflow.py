@@ -157,7 +157,7 @@ def get_css():
           padding-top: 0.1em;
           padding-bottom: 0.1em;
           padding-left: 0.5em;
-          padding-right: 0.5em;
+          padding-right: 0.1em;
         }
         td.label {
           color: black;
