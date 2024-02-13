@@ -11,7 +11,7 @@ def demo_page(*components: AnyComponent, title: str | None = None) -> list[AnyCo
         c.Navbar(
             title='Cashflow App',
             title_event=GoToEvent(url='/'),
-            links=[
+            start_links=[
                 c.Link(
                     components=[c.Text(text='Gilts')],
                     #on_click=GoToEvent(url='/table/cities'),
